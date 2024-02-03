@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class TransactionService {
 
 	@Transactional
 	public void processTransaction(ReceivedTransactionDTO comingTransaction) {
+		var quantityInstallments = comingTransaction.getInstallmentQuantity();
 		Optional<Person> personFromDb = personRepository.findById(comingTransaction.getDocument());
 		if (personFromDb.isEmpty()) {
 			var person = Person.create(
@@ -33,24 +35,28 @@ public class TransactionService {
 							comingTransaction.getName(),
 							comingTransaction.getAge()
 			);
-
+			// create one installment for each monthv
 			var transaction = Transaction.create(
 							comingTransaction.getTransactionId(),
 							person,
 							comingTransaction.getTransactionDate(),
 							comingTransaction.getValue()
 			);
-			var installments = Installment.create(
-							1,
-							comingTransaction.getValue()
-			);
-			transaction.setInstallments(Set.of(installments));
+			var installments = new HashSet<Installment>();
+			for (int i = 1; i <= quantityInstallments; i++) { // popula a tabela de installment com as parcelas
+				var installment = Installment.create(
+								i,
+								comingTransaction.getValue() / quantityInstallments
+				);
+				installment.setTransaction(transaction);
+				installments.add(installment);
+			}
+			transaction.setInstallments(installments);
 			transaction.setPerson(person);
 			person.setTransactions(Set.of(transaction));
-			installments.setTransaction(transaction);
 			transactionRepository.save(transaction);
 		}
-		//todo: implement user already exists flow
+
 
 	}
 }

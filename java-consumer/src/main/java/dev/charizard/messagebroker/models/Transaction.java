@@ -12,7 +12,7 @@ public class Transaction {
 	@Id
 	private String id; //comes from outside
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "person_id")
 	private Person person;
 
@@ -22,7 +22,7 @@ public class Transaction {
 	@Column(name = "amount")
 	private Double amount;
 
-	@OneToMany(mappedBy = "transaction", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Installment> installments;
 
 	public Transaction() {
