@@ -2,6 +2,7 @@ package dev.charizard.messagebroker.models;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,8 +18,8 @@ public class Person {
 	@Column(name = "age")
 	private Integer age;
 
-	@OneToMany(mappedBy = "person")
-	private Set<Transaction> transactions;
+	@OneToMany(mappedBy = "person", fetch = FetchType.EAGER) //eager due need to load old transactions
+	private Set<Transaction> transactions = new HashSet<>();
 
 
 	public Person() {
@@ -36,7 +37,7 @@ public class Person {
 						document,
 						name,
 						age,
-						Set.of() //if user still doesn't exists, it doesn't have transactions
+						new HashSet<Transaction>() //if user still doesn't exists, it doesn't have transactions
 		);
 		var errors = person.validate();
 		if (!errors.isEmpty()) {
@@ -83,4 +84,7 @@ public class Person {
 		this.transactions = transactions;
 	}
 
+	public void registerTransaction(Transaction transaction) {
+		this.transactions.add(transaction);
+	}
 }
