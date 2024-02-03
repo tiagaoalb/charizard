@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.8.16-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: db
+    volumes:
+      - ./.db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+#  java: TODO: ENTRYPOINT ( usar localmente por enquanto )
+#    image: openjdk:17-jdk-alpine
+#    container_name: java
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - ./golang:/app
+#    working_dir: /app
+#  golang:
+#    image: golang:latest
+#    container_name: golang
+#    ports:
+#      - "8081:8081"
+#    volumes:
+#      - ./java:/app
+#    working_dir: /app
+
