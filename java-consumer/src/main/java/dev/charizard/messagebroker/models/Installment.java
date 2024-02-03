@@ -2,6 +2,9 @@ package dev.charizard.messagebroker.models;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+import java.util.UUID;
+
 @Entity(name = "installment")
 public class Installment {
 	@Id
@@ -28,9 +31,24 @@ public class Installment {
 		this.value = value;
 	}
 
-	public static Installment create(){
+	public static Installment create(Integer installmentNumber, Double value) {
 		//TODO: domain logic
-		return new Installment();
+		var installment = new Installment(
+						UUID.randomUUID().toString(),
+						null,
+						installmentNumber,
+						value
+		);
+		var errors = installment.validate();
+		if (!errors.isEmpty()) {
+			//TODO: explode to DLQ
+			throw new RuntimeException("Invalid Installment");
+		}
+		return installment;
+	}
+
+	private Set<String> validate() {
+		return Set.of();
 	}
 
 	public String getId() {

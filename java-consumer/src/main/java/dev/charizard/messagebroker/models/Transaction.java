@@ -3,15 +3,16 @@ package dev.charizard.messagebroker.models;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 
 @Entity(name = "transaction")
-public class Transaction{
+public class Transaction {
 	@Id
 	private String id; //comes from outside
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinColumn(name = "person_id")
 	private Person person;
 
@@ -19,20 +20,45 @@ public class Transaction{
 	private Instant transactionDate;
 
 	@Column(name = "amount")
-	private String amount;
+	private Double amount;
 
-	@OneToMany(mappedBy = "transaction")
+	@OneToMany(mappedBy = "transaction", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private Set<Installment> installments;
 
 	public Transaction() {
 	}
 
-	public Transaction(String id, Person person, Instant transactionDate, String amount, Set<Installment> installments) {
+	public Transaction(String id, Person person, Instant transactionDate, Double amount, Set<Installment> installments) {
 		this.id = id;
 		this.person = person;
 		this.transactionDate = transactionDate;
 		this.amount = amount;
 		this.installments = installments;
+	}
+
+	public static Transaction create(
+					String id,
+					Person person,
+					Instant transactionDate,
+					Double amount
+	) {
+		var transaction = new Transaction(
+						id,
+						person,
+						transactionDate,
+						amount,
+						null
+
+		);
+		var errors = transaction.validate();
+		if (errors.size() > 0) {
+			//todo: catch and send to DLQ
+		}
+		return transaction;
+	}
+
+	public List<String> validate() {
+		return List.of();
 	}
 
 	public String getId() {
@@ -59,11 +85,11 @@ public class Transaction{
 		this.transactionDate = transactionDate;
 	}
 
-	public String getAmount() {
+	public Double getAmount() {
 		return amount;
 	}
 
-	public void setAmount(String amount) {
+	public void setAmount(Double amount) {
 		this.amount = amount;
 	}
 
