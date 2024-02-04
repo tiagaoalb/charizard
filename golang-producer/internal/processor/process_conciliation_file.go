@@ -37,8 +37,6 @@ func (o *ConciliationDataProcessor) FlushConciliation(conn *amqp.Connection) {
 		log.Default().Fatalln("Failed to read the original csv to copy csv", err.Error())
 	}
 
-	var conArr []model.Conciliation
-
 	for _, lines := range reader {
 		date, _ := time.Parse(time.RFC3339, lines[1])
 		con := model.Conciliation{
@@ -47,9 +45,8 @@ func (o *ConciliationDataProcessor) FlushConciliation(conn *amqp.Connection) {
 			Document:        lines[2],
 			Status:          lines[3],
 		}
-		conArr = append(conArr, con)
 
-		toJson, err = json.MarshalIndent(conArr, "", " ")
+		toJson, err = json.MarshalIndent(con, "", " ")
 		if err != nil {
 			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
 		}

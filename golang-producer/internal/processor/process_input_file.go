@@ -44,8 +44,6 @@ func (o *InputDataProcessor) FlushInput(conn *amqp.Connection) {
 		log.Default().Fatalln("Failed to read the original csv to copy csv", err.Error())
 	}
 
-	var inputArr []model.Input
-
 	for _, lines := range reader {
 		date, _ := time.Parse(time.RFC3339, lines[1])
 		age, _ := strconv.Atoi(lines[4])
@@ -60,12 +58,11 @@ func (o *InputDataProcessor) FlushInput(conn *amqp.Connection) {
 			Value:              value,
 			InstallmentsNumber: installmentNumber,
 		}
-		inputArr = append(inputArr, input)
+		toJson, err := json.MarshalIndent(input, "", " ")
+		if err != nil {
+			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
+		}
+		fmt.Println(string(toJson))
+		queue.PublishInput(conn, string(toJson))
 	}
-	toJson, err := json.MarshalIndent(inputArr, "", " ")
-	if err != nil {
-		log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
-	}
-	fmt.Println(string(toJson))
-	queue.PublishInput(conn, string(toJson))
 }
