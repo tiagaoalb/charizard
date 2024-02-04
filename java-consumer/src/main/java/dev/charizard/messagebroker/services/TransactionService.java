@@ -23,7 +23,6 @@ public class TransactionService {
 		transactionRepository.findById(comingTransaction.getTransactionId()).ifPresent(transaction -> {
 			return; // já foi processada
 		});
-		var quantityInstallments = comingTransaction.getInstallmentQuantity();
 		Person person = personRepository.findById(comingTransaction.getDocument()).orElse(null);
 		if (person == null) {
 			person = Person.create(
@@ -37,7 +36,7 @@ public class TransactionService {
 						comingTransaction.getTransactionId(),
 						comingTransaction.getTransactionDate(),
 						comingTransaction.getValue(),
-						quantityInstallments
+						comingTransaction.getInstallmentQuantity()
 		);
 		transactionRepository.save(transactionAggregate);
 	}

@@ -1,4 +1,4 @@
-package dev.charizard.messagebroker;
+package dev.charizard.messagebroker.listeners;
 
 
 import dev.charizard.messagebroker.dtos.ReceivedTransactionDTO;
@@ -15,7 +15,7 @@ public class TransactionConsumer {
 	@Autowired
 	TransactionService transactionService;
 
-	@RabbitListener(queues = "transaction") // Specify the name of the queue to listen to
+	@RabbitListener(queues = "${rabbitmq.transaction.queue}") // Specify the name of the queue to listen to
 	public void onTransaction(ReceivedTransactionDTO event) {
 		try {
 			transactionService.processTransaction(event);

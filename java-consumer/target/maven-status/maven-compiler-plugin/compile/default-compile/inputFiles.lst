@@ -1,0 +1,17 @@
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/MessagebrokerApplication.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/dtos/ReceivedConciliationDTO.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/ConciliationConsumer.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/services/TransactionService.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/models/Installment.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/repositories/PersonRepository.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/models/TransactionStatus.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/exceptions/EntityValidationException.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/factories/TransactionFactory.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/models/Person.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/configs/RabbitMQConfig.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/TransactionConsumer.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/dtos/ReceivedTransactionDTO.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/models/Transaction.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/repositories/InstallmentRepository.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/dtos/ConciliationStatusDTO.java
+/home/leodev/IdeaProjects/charizard/java-consumer/src/main/java/dev/charizard/messagebroker/repositories/TransactionRepository.java

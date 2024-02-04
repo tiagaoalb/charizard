@@ -1,4 +1,4 @@
-package dev.charizard.messagebroker;
+package dev.charizard.messagebroker.listeners;
 
 
 import dev.charizard.messagebroker.dtos.ReceivedConciliationDTO;
@@ -15,7 +15,8 @@ public class ConciliationConsumer {
 	@Autowired
 	TransactionService transactionService;
 
-	@RabbitListener(queues = "conciliation") // Specify the name of the queue to listen to
+
+	@RabbitListener(queues = "${rabbitmq.conciliation.queue}") // Specify the name of the queue to listen to
 	public void onConciliation(ReceivedConciliationDTO event) {
 		try {
 			transactionService.processConciliation(event);
