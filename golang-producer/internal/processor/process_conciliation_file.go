@@ -4,9 +4,10 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 	"log"
 	"os"
+
+	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 )
 
 type ConciliationDataProcessor struct {
