@@ -1,6 +1,16 @@
 version: "3.9"
 
 services:
+  golang:
+    image: leoff00/producer:latest
+    container_name: producer_container
+    build:
+      context: dockerfile
+      dockerfile: .
+    depends_on: [rabbitmq]
+    restart: on-failure
+    ports:
+      - 4000:4000
   rabbitmq:
     image: rabbitmq:3.8.16-management
     container_name: rabbitmq
