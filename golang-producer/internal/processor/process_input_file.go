@@ -10,7 +10,10 @@ import (
 	"sync"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"github.com/tiagaoalb/charizard/golang-producer/internal/model"
+	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 )
 
 var wg sync.WaitGroup
@@ -19,8 +22,9 @@ type InputDataProcessor struct {
 	InputPath string
 }
 
-func (o *InputDataProcessor) FlushInput() {
+func (o *InputDataProcessor) FlushInput(conn *amqp.Connection) {
 	log.Default().Println("Read to flush csv...")
+	toJsonInputChan := make(chan []byte)
 	workers := 2
 	data, err := os.Open(o.InputPath)
 
@@ -47,8 +51,9 @@ func (o *InputDataProcessor) FlushInput() {
 
 	var inputArr []model.Input
 
+	wg.Add(1)
+	defer wg.Done()
 	go func() {
-		defer wg.Done()
 		for lines := range linesChan {
 			date, _ := time.Parse(time.RFC3339, lines[1])
 			age, _ := strconv.Atoi(lines[4])
@@ -65,12 +70,13 @@ func (o *InputDataProcessor) FlushInput() {
 			}
 			inputArr = append(inputArr, input)
 		}
-		j, err := json.MarshalIndent(inputArr, "", " ")
+		toJson, err := json.MarshalIndent(inputArr, "", " ")
 		if err != nil {
 			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
 		}
-		// queue.PublishInput(string(j))
-		fmt.Println(string(j))
+		fmt.Println(string(toJson))
+
+		toJsonInputChan <- toJson
 	}()
 
 	for i := 0; i < workers; i++ {
@@ -86,5 +92,6 @@ func (o *InputDataProcessor) FlushInput() {
 
 	wg.Wait()
 	close(linesChan)
-
+	serializedData := <-toJsonInputChan
+	queue.PublishInput(conn, string(serializedData))
 }

@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/tiagaoalb/charizard/golang-producer/internal/processor"
 )
@@ -13,7 +15,7 @@ var (
 	c = processor.ConciliationDataProcessor{InputPath: "./conciliation/conciliation-data.csv"}
 )
 
-func WatchEvents() {
+func WatchEvents(conn *amqp.Connection) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -44,13 +46,13 @@ func WatchEvents() {
 					log.Default().Println("Watching file ->", event.Name)
 					log.Default().Println("Executing processor function...")
 					log.Default().Println("Processing conciliation data csv...")
-					c.FlushConciliation()
+					c.FlushConciliation(conn)
 				}
 				if strings.Contains(event.Name, "input-data.csv") {
 					log.Default().Println("Watching file ->", event.Name)
 					log.Default().Println("Executing processor function...")
 					log.Default().Println("Processing input data csv...")
-					i.FlushInput()
+					i.FlushInput(conn)
 				}
 			}
 		case err, ok := <-watcher.Errors:

@@ -8,15 +8,20 @@ import (
 	"os"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"github.com/tiagaoalb/charizard/golang-producer/internal/model"
+	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 )
 
 type ConciliationDataProcessor struct {
 	InputPath string
 }
 
-func (o *ConciliationDataProcessor) FlushConciliation() {
+func (o *ConciliationDataProcessor) FlushConciliation(conn *amqp.Connection) {
 	log.Default().Println("Read to flush csv...")
+	var toJson []byte
+	toJsonChan := make(chan []byte)
 	workers := 2
 	data, err := os.Open(o.InputPath)
 
@@ -39,8 +44,9 @@ func (o *ConciliationDataProcessor) FlushConciliation() {
 
 	var conArr []model.Conciliation
 
+	wg.Add(1)
+	defer wg.Done()
 	go func() {
-		defer wg.Done()
 		for lines := range linesChan {
 			date, _ := time.Parse(time.RFC3339, lines[1])
 			con := model.Conciliation{
@@ -51,12 +57,12 @@ func (o *ConciliationDataProcessor) FlushConciliation() {
 			}
 			conArr = append(conArr, con)
 		}
-		j, err := json.MarshalIndent(conArr, "", " ")
+		toJson, err = json.MarshalIndent(conArr, "", " ")
 		if err != nil {
 			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
 		}
-		// queue.PublishConciliation(string(j))
-		fmt.Println(string(j))
+		fmt.Println(string(toJson))
+		toJsonChan <- toJson
 	}()
 
 	for i := 0; i < workers; i++ {
@@ -67,10 +73,11 @@ func (o *ConciliationDataProcessor) FlushConciliation() {
 			for _, lines := range reader {
 				linesChan <- lines
 			}
+
 		}()
 	}
-
 	wg.Wait()
 	close(linesChan)
-
+	serializedData := <-toJsonChan
+	queue.PublishConciliation(conn, string(serializedData))
 }
