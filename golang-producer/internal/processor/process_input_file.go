@@ -69,6 +69,7 @@ func (o *InputDataProcessor) FlushInput() {
 		if err != nil {
 			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
 		}
+		// queue.PublishInput(string(j))
 		fmt.Println(string(j))
 	}()
 

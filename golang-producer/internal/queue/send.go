@@ -2,17 +2,23 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/tiagaoalb/charizard/golang-producer/pkg/env"
 	"log"
 	"time"
 )
 
-const (
-	ConciliationQueueName = "conciliation"
-	ConciliationDLX       = "conciliation.dlx"
-	TransactionQueueName  = "transaction"
-	TransactionDLX        = "transaction.dlx"
-	RabbitURL             = "amqp://guest:guest@localhost:5672/"
+var (
+	host                  = env.Getenv("rabbitmq_host")
+	port                  = env.Getenv("rabbitmq_port")
+	user                  = env.Getenv("rabbitmq_user")
+	pass                  = env.Getenv("rabbitmq_pass")
+	vhost                 = env.Getenv("rabbitmq_vhost")
+	ConciliationQueueName = env.Getenv("rabbitmq_conciliation_queue")
+	ConciliationDLX       = env.Getenv("rabbitmq_conciliation_dlx")
+	TransactionQueueName  = env.Getenv("rabbitmq_transaction_queue")
+	TransactionDLX        = env.Getenv("rabbitmq_transaction_dlx")
 )
 
 func failOnError(err error, msg string) {
@@ -22,12 +28,16 @@ func failOnError(err error, msg string) {
 }
 
 func connect() *amqp.Connection {
+	RabbitURL := fmt.Sprintf("amqp://%s:%s@%s:%s/%s", user, pass, host, port, vhost)
 	conn, err := amqp.Dial(RabbitURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	return conn
 }
 
 func PublishConciliation(data string) {
+	if data == "" {
+		return
+	}
 	conn := connect()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
@@ -43,15 +53,19 @@ func PublishConciliation(data string) {
 
 	defer cancel()
 
+	log.Default().Println("Pub conciliation data: ", data)
 	err = ch.PublishWithContext(ctx, "", q.Name, false, false,
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json",
 			Body:        []byte(data),
 		})
 	failOnError(err, "Failed to publish a message")
 }
 
 func PublishInput(data string) {
+	if data == "" {
+		return
+	}
 	conn := connect()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
@@ -66,6 +80,7 @@ func PublishInput(data string) {
 
 	defer cancel()
 
+	log.Default().Println("Pub transaction data: ", data)
 	err = ch.PublishWithContext(ctx, "", q.Name, false, false,
 		amqp.Publishing{
 			ContentType: "application/json",

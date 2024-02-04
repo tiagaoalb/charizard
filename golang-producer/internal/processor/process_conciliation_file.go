@@ -55,6 +55,7 @@ func (o *ConciliationDataProcessor) FlushConciliation() {
 		if err != nil {
 			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
 		}
+		// queue.PublishConciliation(string(j))
 		fmt.Println(string(j))
 	}()
 
