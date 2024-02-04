@@ -20,17 +20,17 @@ func WatchEvents() {
 	}
 	defer watcher.Close()
 
-	diretorios := []string{
+	dirs := []string{
 		"./input",
 		"./conciliation",
 	}
 
-	for _, dir := range diretorios {
+	for _, dir := range dirs {
 		err := watcher.Add(dir)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("Observando o diretório: %s\n", dir)
+		log.Default().Printf("Watching dir ->: %s\n", dir)
 	}
 
 	for {
@@ -57,7 +57,7 @@ func WatchEvents() {
 			if !ok {
 				return
 			}
-			log.Println("Erro do observador:", err)
+			log.Default().Println("Erro during observe files:", err)
 		}
 	}
 }

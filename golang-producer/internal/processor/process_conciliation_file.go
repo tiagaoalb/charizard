@@ -7,7 +7,6 @@ import (
 	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 	"log"
 	"os"
-	"sync"
 )
 
 type ConciliationDataProcessor struct {
@@ -17,8 +16,6 @@ type ConciliationDataProcessor struct {
 
 func (p *ConciliationDataProcessor) CsvToJson() {
 	var toJson []byte
-	var wg sync.WaitGroup
-	workers := 10
 	file, err := os.Open(p.OutputPath)
 
 	if err != nil {
@@ -34,27 +31,22 @@ func (p *ConciliationDataProcessor) CsvToJson() {
 		log.Default().Fatalln("Cannot read the csv line, file should be revised", err.Error())
 	}
 
-	wg.Add(workers)
-	for i := 1; i <= workers; i++ {
-		go func() {
-			defer func() {
-				wg.Done()
-			}()
-			for _, each := range lines {
-				toJson, err = json.Marshal(each)
-				if err != nil {
-					log.Default().Fatalln("Cannot convert csv file to json, file should be revised", err)
-				}
+	for _, each := range lines {
+		go func(each []string) {
+			toJson, err = json.Marshal(each)
+			if err != nil {
+				log.Default().Fatalln("Cannot convert csv file to json, file should be revised", err)
 			}
-		}()
+		}(each)
 	}
+
 	fmt.Println(string(toJson))
 	queue.PublishConciliation(string(toJson))
 }
 
 func (o *ConciliationDataProcessor) FlushNewCsv() {
 	log.Default().Println("Read to flush csv...")
-	workers := 10
+	workers := 2
 	data, err := os.Open(o.InputPath)
 
 	if err != nil {
