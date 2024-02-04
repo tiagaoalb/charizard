@@ -1,5 +1,6 @@
 package dev.charizard.messagebroker.services;
 
+import dev.charizard.messagebroker.dtos.ReceivedConciliationDTO;
 import dev.charizard.messagebroker.dtos.ReceivedTransactionDTO;
 import dev.charizard.messagebroker.models.Installment;
 import dev.charizard.messagebroker.models.Person;
@@ -12,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class TransactionService {
@@ -29,7 +28,6 @@ public class TransactionService {
 		var quantityInstallments = comingTransaction.getInstallmentQuantity();
 		Person person = personRepository.findById(comingTransaction.getDocument()).orElse(null);
 		if (person == null) {
-			System.out.println("Person not found");
 			person = Person.create(
 							comingTransaction.getDocument(),
 							comingTransaction.getName(),
@@ -53,6 +51,17 @@ public class TransactionService {
 		}
 		transaction.setInstallments(newInstallments);
 		transaction.setPerson(person);
+		transactionRepository.save(transaction);
+	}
+
+	@Transactional
+	public void processConciliation(ReceivedConciliationDTO comingConciliation) {
+		Transaction transaction = transactionRepository.findById(comingConciliation.getTransactionId()).orElse(null);
+		if (transaction == null) {
+			//todo: DLQ
+			return;
+		}
+		transaction.setStatus(comingConciliation.toTransactionStatus());
 		transactionRepository.save(transaction);
 	}
 }

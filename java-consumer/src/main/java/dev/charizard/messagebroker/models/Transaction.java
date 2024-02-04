@@ -10,6 +10,7 @@ import java.util.Set;
 @Entity(name = "transaction")
 public class Transaction {
 	@Id
+	@Column(name = "id", length = 36)
 	private String id; //comes from outside
 
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -22,19 +23,25 @@ public class Transaction {
 	@Column(name = "amount")
 	private Double amount;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", length = 1)
+	private TransactionStatus status;
+	
 	@OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Installment> installments;
 
 	public Transaction() {
 	}
 
-	public Transaction(String id, Person person, Instant transactionDate, Double amount, Set<Installment> installments) {
+	public Transaction(String id, Person person, Instant transactionDate, Double amount, TransactionStatus status, Set<Installment> installments) {
 		this.id = id;
 		this.person = person;
 		this.transactionDate = transactionDate;
 		this.amount = amount;
+		this.status = status;
 		this.installments = installments;
 	}
+
 
 	public static Transaction create(
 					String id,
@@ -47,7 +54,9 @@ public class Transaction {
 						person,
 						transactionDate,
 						amount,
+						TransactionStatus.P,
 						null
+
 
 		);
 		var errors = transaction.validate();
@@ -56,6 +65,7 @@ public class Transaction {
 		}
 		return transaction;
 	}
+
 
 	public List<String> validate() {
 		return List.of();
@@ -91,6 +101,14 @@ public class Transaction {
 
 	public void setAmount(Double amount) {
 		this.amount = amount;
+	}
+
+	public TransactionStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(TransactionStatus status) {
+		this.status = status;
 	}
 
 	public Set<Installment> getInstallments() {

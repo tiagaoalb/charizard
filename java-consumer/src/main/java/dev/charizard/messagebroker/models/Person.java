@@ -9,7 +9,7 @@ import java.util.UUID;
 @Entity(name = "person")
 public class Person {
 	@Id
-	@Column(name = "id")
+	@Column(name = "id", length = 16)
 	private String id; //todo: cpf validate || CNPJ
 
 	@Column(name = "name")

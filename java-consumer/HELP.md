@@ -1,18 +1,32 @@
-# Getting Started
+# ASAP Hackaton Project - Team Charizard
 
-### Reference Documentation
-For further reference, please consider the following sections:
+## Integrantes
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.2/maven-plugin/reference/html/)
-* [Create an OCI image](https://docs.spring.io/spring-boot/docs/3.2.2/maven-plugin/reference/html/#build-image)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.2/reference/htmlsingle/index.html#web)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/docs/3.2.2/reference/htmlsingle/index.html#using.devtools)
+https://github.com/Leoff00
+https://github.com/tiagaoalb
+https://github.com/leo-the-nardo
 
-### Guides
-The following guides illustrate how to use some features concretely:
+O desafio consiste em desenvolver dois microsserviços.
+É exigido que o candidato codifique um programa capaz de ler um arquivo CSV e publicar, para
+cada linha do arquivo, uma mensagem em formato JSON de acordo com um critério de
+parse.
+Um outro programa deve ser construído para consumir as mensagens publicadas e persistir
+os dados em um modelo relacional
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+Tecnologias utilizadas:
 
+- Golang
+- Java
+- RabbitMQ
+
+## Run
+
+`docker compose up -d`
+
+Rabbitmq panel
+
+`http://localhost:15672/`
+
+Postgres
+
+`postgresql://user:pass@localhost:5432/db`

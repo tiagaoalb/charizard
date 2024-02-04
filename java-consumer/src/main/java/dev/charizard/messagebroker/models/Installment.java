@@ -8,11 +8,11 @@ import java.util.UUID;
 @Entity(name = "installment")
 public class Installment {
 	@Id
-	@Column(name = "id")
+	@Column(name = "id", length = 36)
 	private String id;
 
 	@ManyToOne
-	@JoinColumn(name = "transaction")
+	@JoinColumn(name = "transaction_id")
 	private Transaction transaction;
 
 	@Column(name = "installment_number")
