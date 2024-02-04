@@ -9,7 +9,7 @@ type Input struct {
 	Name               string    `csv:"name" json:"name"`
 	Age                int       `csv:"age" json:"age"`
 	Value              float64   `csv:"value" json:"value"`
-	InstallmentsNumber int       `csv:"installments_number" json:"installmentsNumber"`
+	InstallmentsNumber int       `csv:"installments_number" json:"installmentQuantity"`
 }
 
 type Conciliation struct {
