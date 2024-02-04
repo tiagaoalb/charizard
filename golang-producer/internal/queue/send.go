@@ -6,6 +6,14 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/tiagaoalb/charizard/golang-producer/pkg/env"
+)
+
+var (
+	ConciliationQueueName = env.Getenv("rabbitmq_conciliation_queue")
+	ConciliationDLX       = env.Getenv("rabbitmq_conciliation_dlx")
+	TransactionQueueName  = env.Getenv("rabbitmq_transaction_queue")
+	TransactionDLX        = env.Getenv("rabbitmq_transaction_dlx")
 )
 
 func failOnError(err error, msg string) {
@@ -14,46 +22,50 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func connect() *amqp.Connection {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	failOnError(err, "Failed to connect to RabbitMQ")
-	return conn
-}
-
-func PublishConciliation(data string) {
-	conn := connect()
+func PublishConciliation(conn *amqp.Connection, data string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	if err != nil {
+		log.Fatalf("Failed to open a channel: %v", err)
+	}
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare("pruducer_queue", true, false, false, false, nil)
-	failOnError(err, "Failed to declare a queue")
+	args := amqp.Table{
+		"x-dead-letter-exchange": ConciliationDLX,
+	}
 
-	defer cancel()
+	q, err := ch.QueueDeclare(ConciliationQueueName, true, false, false, false, args)
+	if err != nil {
+		log.Fatalf("Failed to declare a queue: %v", err)
+	}
 
 	err = ch.PublishWithContext(ctx, "", q.Name, false, false,
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json",
 			Body:        []byte(data),
 		})
-	failOnError(err, "Failed to publish a message")
+	if err != nil {
+		log.Fatalf("Failed to publish a message: %v", err)
+	}
 }
 
-func PublishInput(data string) {
-	conn := connect()
+func PublishInput(conn *amqp.Connection, data string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
-
-	q, err := ch.QueueDeclare("pruducer_queue", true, false, false, false, nil)
+	args := amqp.Table{
+		"x-dead-letter-exchange": TransactionDLX,
+	}
+	q, err := ch.QueueDeclare(TransactionQueueName, true, false, false, false, args)
 	failOnError(err, "Failed to declare a queue")
 
 	defer cancel()
 
+	log.Default().Println("Pub transaction data: ", data)
 	err = ch.PublishWithContext(ctx, "", q.Name, false, false,
 		amqp.Publishing{
 			ContentType: "application/json",

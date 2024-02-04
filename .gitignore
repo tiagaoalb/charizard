@@ -2,3 +2,4 @@
 .db
 .docker
 .vscode
+golang-producer/bin

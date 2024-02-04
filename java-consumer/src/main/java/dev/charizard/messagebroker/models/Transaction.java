@@ -1,17 +1,21 @@
 package dev.charizard.messagebroker.models;
 
+import dev.charizard.messagebroker.exceptions.EntityValidationException;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
 @Entity(name = "transaction")
-public class Transaction{
+public class Transaction {
 	@Id
+	@Column(name = "id", length = 36)
 	private String id; //comes from outside
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "person_id")
 	private Person person;
 
@@ -19,20 +23,68 @@ public class Transaction{
 	private Instant transactionDate;
 
 	@Column(name = "amount")
-	private String amount;
+	private Double amount;
 
-	@OneToMany(mappedBy = "transaction")
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", length = 1)
+	private TransactionStatus status;
+
+	@OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Installment> installments;
+
+	// NOTE: -> PLEASE USE 'TransactionFactory' TO CREATE! <-
 
 	public Transaction() {
 	}
 
-	public Transaction(String id, Person person, Instant transactionDate, String amount, Set<Installment> installments) {
+	public Transaction(String id, Person person, Instant transactionDate, Double amount, TransactionStatus status, Set<Installment> installments) {
 		this.id = id;
 		this.person = person;
 		this.transactionDate = transactionDate;
 		this.amount = amount;
+		this.status = status;
 		this.installments = installments;
+	}
+
+	public static Transaction create(
+					String id,
+					Person person,
+					Instant transactionDate,
+					Double amount
+	) {
+		var transaction = new Transaction(
+						id.trim(),
+						person,
+						transactionDate,
+						amount,
+						TransactionStatus.P,
+						null
+
+
+		);
+		var errors = transaction.validate();
+		if (!errors.isEmpty()) {
+			throw new EntityValidationException(errors);
+		}
+		return transaction;
+	}
+
+
+	public Set<String> validate() {
+		var errors = new HashSet<String>();
+		if (id == null || id.length() != 36) { //UUID
+			errors.add("Invalid id:" + id);
+		}
+		if (transactionDate == null || transactionDate.isAfter(Instant.now())) {
+			errors.add("Invalid transaction date:" + transactionDate);
+		}
+		if (amount == null || amount <= 0) {
+			errors.add("Invalid amount:" + amount);
+		}
+		if (status == null || !status.equals(TransactionStatus.P) && !status.equals(TransactionStatus.C) && !status.equals(TransactionStatus.N)) {
+			errors.add("Invalid status:" + status);
+		}
+		return errors;
 	}
 
 	public String getId() {
@@ -59,12 +111,20 @@ public class Transaction{
 		this.transactionDate = transactionDate;
 	}
 
-	public String getAmount() {
+	public Double getAmount() {
 		return amount;
 	}
 
-	public void setAmount(String amount) {
+	public void setAmount(Double amount) {
 		this.amount = amount;
+	}
+
+	public TransactionStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(TransactionStatus status) {
+		this.status = status;
 	}
 
 	public Set<Installment> getInstallments() {

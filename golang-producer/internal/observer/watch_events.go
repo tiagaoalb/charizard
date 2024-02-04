@@ -4,33 +4,35 @@ import (
 	"log"
 	"strings"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/tiagaoalb/charizard/golang-producer/internal/processor"
 )
 
 var (
-	i = processor.InputDataProcessor{InputPath: "./input/input-data.csv", OutputPath: "./output/output-data.csv"}
-	c = processor.ConciliationDataProcessor{InputPath: "./conciliation/conciliation-data.csv", OutputPath: "./output/output-conciliation-data.csv"}
+	i = processor.InputDataProcessor{InputPath: "./input/input-data.csv"}
+	c = processor.ConciliationDataProcessor{InputPath: "./conciliation/conciliation-data.csv"}
 )
 
-func WatchEvents() {
+func WatchEvents(conn *amqp.Connection) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer watcher.Close()
 
-	diretorios := []string{
+	dirs := []string{
 		"./input",
 		"./conciliation",
 	}
 
-	for _, dir := range diretorios {
+	for _, dir := range dirs {
 		err := watcher.Add(dir)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("Observando o diretório: %s\n", dir)
+		log.Default().Printf("Watching dir ->: %s\n", dir)
 	}
 
 	for {
@@ -44,20 +46,20 @@ func WatchEvents() {
 					log.Default().Println("Watching file ->", event.Name)
 					log.Default().Println("Executing processor function...")
 					log.Default().Println("Processing conciliation data csv...")
-					c.FlushNewCsv()
+					c.FlushConciliation(conn)
 				}
 				if strings.Contains(event.Name, "input-data.csv") {
 					log.Default().Println("Watching file ->", event.Name)
 					log.Default().Println("Executing processor function...")
 					log.Default().Println("Processing input data csv...")
-					i.FlushNewCsv()
+					i.FlushInput(conn)
 				}
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
-			log.Println("Erro do observador:", err)
+			log.Default().Println("Erro during observe files:", err)
 		}
 	}
 }
