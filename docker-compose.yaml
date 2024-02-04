@@ -1,16 +1,6 @@
 version: "3.9"
 
 services:
-  golang:
-    image: leoff00/producer:latest
-    container_name: producer_container
-    build:
-      context: dockerfile
-      dockerfile: .
-    depends_on: [rabbitmq]
-    restart: on-failure
-    ports:
-      - 4000:4000
   rabbitmq:
     image: rabbitmq:3.8.16-management
     container_name: rabbitmq
@@ -41,12 +31,12 @@ services:
       - DATABASE_URL=jdbc:postgresql://db:5432/db
       - RABBITMQ_HOST=rabbitmq
     restart: always
-#  golang:
-#    image: leo00ff/asapcard-golang-producer:latest
-#    container_name: golang
-#    volumes:
-#      - pathtolisten:/input
-#      - pathtolisten:/conciliation
-#    environment:
-#      - RABBITMQ_HOST=rabbitmq
-#    restart: always
+  golang:
+    image: leothenardo/asapcard-golang-producer:latest
+    container_name: golang
+    volumes:
+      - ./input:/usr/src/app/input
+      - ./conciliation:/usr/src/app/conciliation
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    restart: always

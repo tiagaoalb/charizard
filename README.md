@@ -27,7 +27,7 @@ Tecnologias utilizadas:
 
  Rabbitmq panel
 
-`http://localhost:15672/`
+`http://localhost:15672/` `guest guest`
 
 Postgres
 

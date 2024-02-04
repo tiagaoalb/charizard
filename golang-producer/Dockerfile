@@ -1,11 +1,12 @@
 FROM golang:1.20.0-alpine
 
-# Create directories
-RUN mkdir input && \
-    mkdir conciliation
+WORKDIR /usr/src/app
 
-# Copy binary golang
-COPY binario binario
+# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
-# Set entry point
-ENTRYPOINT [ "./binario" ]
+COPY . .
+RUN go build -v -o /usr/local/bin/app ./cmd/producer/main.go
+
+CMD ["app"]
