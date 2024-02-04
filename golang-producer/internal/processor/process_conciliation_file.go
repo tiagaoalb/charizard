@@ -3,7 +3,6 @@ package processor
 import (
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -41,7 +40,6 @@ func (p *ConciliationDataProcessor) CsvToJson() {
 		}(each)
 	}
 
-	fmt.Println(string(toJson))
 	queue.PublishConciliation(string(toJson))
 }
 

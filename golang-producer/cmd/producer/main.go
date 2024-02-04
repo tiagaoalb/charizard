@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	"github.com/tiagaoalb/charizard/golang-producer/internal/observer"
+	"log"
 )
 
 func main() {

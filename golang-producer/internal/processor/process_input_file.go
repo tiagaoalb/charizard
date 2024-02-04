@@ -3,7 +3,6 @@ package processor
 import (
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -43,8 +42,7 @@ func (p *InputDataProcessor) CsvToJson() {
 			}
 		}(each)
 	}
-
-	fmt.Println(string(toJson))
+	
 	queue.PublishInput(string(toJson))
 }
 
