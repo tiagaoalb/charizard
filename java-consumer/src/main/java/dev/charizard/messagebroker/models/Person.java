@@ -49,9 +49,7 @@ public class Person {
 		if (id.length() != 11 && id.length() != 14) { //cpf or cnpj
 			errors.add("Invalid document:" + id);
 		}
-		String NAME_PATTERN = "^[a-zA-Z\\s\\-]+$";
-		Pattern pattern = Pattern.compile(NAME_PATTERN);
-		if (name == null || name.isBlank() || !pattern.matcher(name).matches()) {
+		if (name == null || name.isBlank()) {
 			errors.add("Invalid name:" + name);
 		}
 		if (age == null || age <= 0 || age >= 150) {
