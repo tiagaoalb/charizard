@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 	"log"
 	"os"
 	"sync"
@@ -50,7 +51,7 @@ func (p *InputDataProcessor) CsvToJson() {
 		}()
 	}
 	fmt.Println(string(toJson))
-	// queue.PublishInput(string(toJson))
+	queue.PublishInput(string(toJson))
 }
 
 func (o *InputDataProcessor) FlushNewCsv() {

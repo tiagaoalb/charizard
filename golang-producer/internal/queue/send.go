@@ -2,10 +2,17 @@ package queue
 
 import (
 	"context"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"time"
+)
 
-	amqp "github.com/rabbitmq/amqp091-go"
+const (
+	ConciliationQueueName = "conciliation"
+	ConciliationDLX       = "conciliation.dlx"
+	TransactionQueueName  = "transaction"
+	TransactionDLX        = "transaction.dlx"
+	RabbitURL             = "amqp://guest:guest@localhost:5672/"
 )
 
 func failOnError(err error, msg string) {
@@ -15,7 +22,7 @@ func failOnError(err error, msg string) {
 }
 
 func connect() *amqp.Connection {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial(RabbitURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	return conn
 }
@@ -28,7 +35,10 @@ func PublishConciliation(data string) {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare("pruducer_queue", true, false, false, false, nil)
+	args := amqp.Table{
+		"x-dead-letter-exchange": ConciliationDLX,
+	}
+	q, err := ch.QueueDeclare(ConciliationQueueName, true, false, false, false, args)
 	failOnError(err, "Failed to declare a queue")
 
 	defer cancel()
@@ -48,8 +58,10 @@ func PublishInput(data string) {
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
-
-	q, err := ch.QueueDeclare("pruducer_queue", true, false, false, false, nil)
+	args := amqp.Table{
+		"x-dead-letter-exchange": TransactionDLX,
+	}
+	q, err := ch.QueueDeclare(TransactionQueueName, true, false, false, false, args)
 	failOnError(err, "Failed to declare a queue")
 
 	defer cancel()
