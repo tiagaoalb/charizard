@@ -1,8 +1,10 @@
 package dev.charizard.messagebroker.models;
 
+import dev.charizard.messagebroker.exceptions.EntityValidationException;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,9 +28,11 @@ public class Transaction {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", length = 1)
 	private TransactionStatus status;
-	
+
 	@OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Installment> installments;
+
+	// NOTE: -> PLEASE USE 'TransactionFactory' TO CREATE! <-
 
 	public Transaction() {
 	}
@@ -42,7 +46,6 @@ public class Transaction {
 		this.installments = installments;
 	}
 
-
 	public static Transaction create(
 					String id,
 					Person person,
@@ -50,7 +53,7 @@ public class Transaction {
 					Double amount
 	) {
 		var transaction = new Transaction(
-						id,
+						id.trim(),
 						person,
 						transactionDate,
 						amount,
@@ -60,15 +63,28 @@ public class Transaction {
 
 		);
 		var errors = transaction.validate();
-		if (errors.size() > 0) {
-			//todo: catch and send to DLQ
+		if (!errors.isEmpty()) {
+			throw new EntityValidationException(errors);
 		}
 		return transaction;
 	}
 
 
-	public List<String> validate() {
-		return List.of();
+	public Set<String> validate() {
+		var errors = new HashSet<String>();
+		if (id == null || id.length() != 36) { //UUID
+			errors.add("Invalid id:" + id);
+		}
+		if (transactionDate == null || transactionDate.isAfter(Instant.now())) {
+			errors.add("Invalid transaction date:" + transactionDate);
+		}
+		if (amount == null || amount <= 0) {
+			errors.add("Invalid amount:" + amount);
+		}
+		if (status == null || !status.equals(TransactionStatus.P) && !status.equals(TransactionStatus.C) && !status.equals(TransactionStatus.N)) {
+			errors.add("Invalid status:" + status);
+		}
+		return errors;
 	}
 
 	public String getId() {

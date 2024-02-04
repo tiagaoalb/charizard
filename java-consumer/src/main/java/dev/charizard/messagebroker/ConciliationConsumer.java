@@ -2,7 +2,6 @@ package dev.charizard.messagebroker;
 
 
 import dev.charizard.messagebroker.dtos.ReceivedConciliationDTO;
-import dev.charizard.messagebroker.dtos.ReceivedTransactionDTO;
 import dev.charizard.messagebroker.services.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +19,10 @@ public class ConciliationConsumer {
 	public void onConciliation(ReceivedConciliationDTO event) {
 		try {
 			transactionService.processConciliation(event);
+			LOG.info("Conciliation processed for transaction " + event.getTransactionId());
 		} catch (Exception e) {
-			//TODO: Send to dead letter
-			LOG.error("Error processing transaction", e);
+			LOG.error("Error processing conciliation for transaction " + event.getTransactionId(), e);
+			throw e; // This will make the message be requeued 3 times and then sent to the dead letter 
 		}
 	}
 }

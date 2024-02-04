@@ -7,7 +7,7 @@ import java.time.Instant;
 public class ReceivedConciliationDTO {
 	private String transactionId;
 	private Instant transactionDate;
-	private String document;
+	private String document; //person id
 	private ConciliationStatusDTO status;
 
 	public ReceivedConciliationDTO() {
@@ -24,7 +24,7 @@ public class ReceivedConciliationDTO {
 		return switch (status) {
 			case C -> TransactionStatus.C;
 			case N -> TransactionStatus.N;
-			default -> throw new IllegalArgumentException("Unsupported conciliation status: " + status);
+			default -> null; //Entity will validate this and throw.
 		};
 	}
 

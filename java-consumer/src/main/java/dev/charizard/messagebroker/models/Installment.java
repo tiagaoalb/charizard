@@ -1,7 +1,9 @@
 package dev.charizard.messagebroker.models;
 
+import dev.charizard.messagebroker.exceptions.EntityValidationException;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,7 +34,6 @@ public class Installment {
 	}
 
 	public static Installment create(Integer installmentNumber, Double value) {
-		//TODO: domain logic
 		var installment = new Installment(
 						UUID.randomUUID().toString(),
 						null,
@@ -41,14 +42,20 @@ public class Installment {
 		);
 		var errors = installment.validate();
 		if (!errors.isEmpty()) {
-			//TODO: explode to DLQ
-			throw new RuntimeException("Invalid Installment");
+			throw new EntityValidationException(errors);
 		}
 		return installment;
 	}
 
 	private Set<String> validate() {
-		return Set.of();
+		var errors = new HashSet<String>();
+		if (installmentNumber == null || installmentNumber <= 0) {
+			errors.add("Invalid installment number:" + installmentNumber);
+		}
+		if (value == null || value <= 0) {
+			errors.add("Invalid value:" + value);
+		}
+		return errors;
 	}
 
 	public String getId() {

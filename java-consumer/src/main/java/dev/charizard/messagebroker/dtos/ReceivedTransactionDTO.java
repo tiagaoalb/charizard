@@ -2,14 +2,14 @@ package dev.charizard.messagebroker.dtos;
 
 import java.time.Instant;
 
-public class ReceivedTransactionDTO { //aaaaaaaaaaaaaaaaa
+public class ReceivedTransactionDTO {
 	private String transactionId;
 	private Instant transactionDate;
 	private String document; //person id
 	private String name;
 	private Integer age;
-	private Double value;
-	private Integer installmentQuantity; //numero de parcelas
+	private Double value; //total transaction value
+	private Integer installmentQuantity; //numero total de parcelas
 
 	public ReceivedTransactionDTO() {
 	}

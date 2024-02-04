@@ -1,6 +1,9 @@
 package dev.charizard.messagebroker.configs;
 
 
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -12,19 +15,63 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Configuration
 @EnableRabbit
 public class RabbitMQConfig {
-	//TODO: Use application.proprieties
+	//TODO: Unhardcode names ,use application.proprieties
+
+
 	@Bean
 	public Queue transactionQueue() {
-		return new Queue("transaction");
+		Map<String, Object> args = new HashMap<>();
+		args.put("x-dead-letter-exchange", "transaction.dlx"); // exchange vai fazer o roteamento para a fila de dead letter
+		//args.put("x-dead-letter-routing-key", "transaction.dlq"); //se preferir enviar direto para a fila
+		return new Queue("transaction", true, false, false, args);
 	}
 
 	@Bean
 	public Queue conciliationQueue() {
-		return new Queue("conciliation");
+		Map<String, Object> args = new HashMap<>();
+		args.put("x-dead-letter-exchange", "conciliation.dlx");
+		return new Queue("conciliation", true, false, false, args);
+	}
+
+	@Bean
+	public FanoutExchange fanoutExchangeTransactionDLX() { //Dead letter exchange
+		return new FanoutExchange("transaction.dlx");
+	}
+
+	@Bean
+	public FanoutExchange fanoutExchangeConciliationDLX() { //Dead letter exchange
+		return new FanoutExchange("conciliation.dlx");
+	}
+
+	@Bean
+	public Queue transactionQueueDLQ() { //Dead letter queue
+		return new Queue("transaction.dlq");
+	}
+
+	@Bean
+	public Queue conciliationQueueDLQ() { //Dead letter queue
+		return new Queue("conciliation.dlq");
+	}
+
+	@Bean
+	public Binding bindingTransactionDLQ() {
+		Queue queue = transactionQueueDLQ();
+		FanoutExchange exchange = fanoutExchangeTransactionDLX();
+		return BindingBuilder.bind(queue).to(exchange);
+	}
+
+	@Bean
+	public Binding bindingConciliationDLQ() {
+		Queue queue = conciliationQueueDLQ();
+		FanoutExchange exchange = fanoutExchangeConciliationDLX();
+		return BindingBuilder.bind(queue).to(exchange);
 	}
 
 	@Bean

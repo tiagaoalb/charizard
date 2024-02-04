@@ -19,9 +19,11 @@ public class TransactionConsumer {
 	public void onTransaction(ReceivedTransactionDTO event) {
 		try {
 			transactionService.processTransaction(event);
+			LOG.info("Processed transaction " + event.getTransactionId());
+
 		} catch (Exception e) {
-			//TODO: Send to dead letter
-			LOG.error("Error processing transaction", e);
+			LOG.error("Error processing transaction " + event.getTransactionId(), e);
+			throw e; // This will make the message be requeued 3 times and then sent to the dead letter
 		}
 	}
 }

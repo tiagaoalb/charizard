@@ -1,26 +1,24 @@
 package dev.charizard.messagebroker.models;
 
+import dev.charizard.messagebroker.exceptions.EntityValidationException;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Entity(name = "person")
 public class Person {
 	@Id
 	@Column(name = "id", length = 16)
-	private String id; //todo: cpf validate || CNPJ
-
+	private String id; //cpf or cnpj
 	@Column(name = "name")
 	private String name;
-
 	@Column(name = "age")
 	private Integer age;
-
 	@OneToMany(mappedBy = "person", fetch = FetchType.EAGER) //eager due need to load old transactions
 	private Set<Transaction> transactions = new HashSet<>();
-
 
 	public Person() {
 	}
@@ -41,14 +39,25 @@ public class Person {
 		);
 		var errors = person.validate();
 		if (!errors.isEmpty()) {
-			//todo: catch and send to DLQ
+			throw new EntityValidationException(errors);
 		}
 		return person;
 	}
 
 	private Set<String> validate() {
-		//todo: business validation
-		return Set.of();
+		var errors = new HashSet<String>();
+		if (id.length() != 11 && id.length() != 14) { //cpf or cnpj
+			errors.add("Invalid document:" + id);
+		}
+		String NAME_PATTERN = "^[a-zA-Z\\s\\-]+$";
+		Pattern pattern = Pattern.compile(NAME_PATTERN);
+		if (name == null || name.isBlank() || !pattern.matcher(name).matches()) {
+			errors.add("Invalid name:" + name);
+		}
+		if (age == null || age <= 0 || age >= 150) {
+			errors.add("Invalid age:" + age);
+		}
+		return errors;
 	}
 
 
