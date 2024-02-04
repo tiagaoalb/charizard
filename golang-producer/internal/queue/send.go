@@ -21,9 +21,8 @@ func failOnError(err error, msg string) {
 		log.Default().Panicf("%s: %s", msg, err)
 	}
 }
-func PublishConciliation(conn *amqp.Connection, data string) {
-	defer conn.Close()
 
+func PublishConciliation(conn *amqp.Connection, data string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -53,7 +52,6 @@ func PublishConciliation(conn *amqp.Connection, data string) {
 }
 
 func PublishInput(conn *amqp.Connection, data string) {
-	defer conn.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	ch, err := conn.Channel()
