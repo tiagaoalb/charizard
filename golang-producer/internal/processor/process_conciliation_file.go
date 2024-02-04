@@ -3,11 +3,10 @@ package processor
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"sync"
-
-	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 )
 
 type ConciliationDataProcessor struct {
@@ -48,8 +47,8 @@ func (p *ConciliationDataProcessor) CsvToJson() {
 			}
 		}()
 	}
-
-	queue.PublishConciliation(string(toJson))
+	fmt.Println(string(toJson))
+	// queue.PublishConciliation(string(toJson))
 }
 
 func (o *ConciliationDataProcessor) FlushNewCsv() {

@@ -56,7 +56,7 @@ func PublishInput(data string) {
 
 	err = ch.PublishWithContext(ctx, "", q.Name, false, false,
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json",
 			Body:        []byte(data),
 		})
 	failOnError(err, "Failed to publish a message")

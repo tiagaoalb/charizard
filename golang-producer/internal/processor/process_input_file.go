@@ -3,11 +3,10 @@ package processor
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"sync"
-
-	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
 )
 
 var wg sync.WaitGroup
@@ -50,7 +49,8 @@ func (p *InputDataProcessor) CsvToJson() {
 			}
 		}()
 	}
-	queue.PublishInput(string(toJson))
+	fmt.Println(string(toJson))
+	// queue.PublishInput(string(toJson))
 }
 
 func (o *InputDataProcessor) FlushNewCsv() {
