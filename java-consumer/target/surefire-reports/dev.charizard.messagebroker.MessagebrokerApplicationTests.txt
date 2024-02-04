@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: dev.charizard.messagebroker.MessagebrokerApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.699 s -- in dev.charizard.messagebroker.MessagebrokerApplicationTests

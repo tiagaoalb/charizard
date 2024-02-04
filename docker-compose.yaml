@@ -34,20 +34,19 @@ services:
       - ./.db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-#  java: TODO: ENTRYPOINT ( usar localmente por enquanto )
-#    image: openjdk:17-jdk-alpine
-#    container_name: java
-#    ports:
-#      - "8080:8080"
-#    volumes:
-#      - ./golang:/app
-#    working_dir: /app
+  java:
+    image: leothenardo/asapcard-java-consumer:latest
+    container_name: java
+    environment:
+      - DATABASE_URL=jdbc:postgresql://db:5432/db
+      - RABBITMQ_HOST=rabbitmq
+    restart: always
 #  golang:
-#    image: golang:latest
+#    image: leo00ff/asapcard-golang-producer:latest
 #    container_name: golang
-#    ports:
-#      - "8081:8081"
 #    volumes:
-#      - ./java:/app
-#    working_dir: /app
-
+#      - pathtolisten:/input
+#      - pathtolisten:/conciliation
+#    environment:
+#      - RABBITMQ_HOST=rabbitmq
+#    restart: always
