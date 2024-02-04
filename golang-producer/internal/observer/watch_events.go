@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	i = processor.InputDataProcessor{InputPath: "./input/input-data.csv", OutputPath: "./output/output-data.csv"}
-	c = processor.ConciliationDataProcessor{InputPath: "./conciliation/conciliation-data.csv", OutputPath: "./output/output-conciliation-data.csv"}
+	i = processor.InputDataProcessor{InputPath: "./input/input-data.csv"}
+	c = processor.ConciliationDataProcessor{InputPath: "./conciliation/conciliation-data.csv"}
 )
 
 func WatchEvents() {
@@ -44,13 +44,13 @@ func WatchEvents() {
 					log.Default().Println("Watching file ->", event.Name)
 					log.Default().Println("Executing processor function...")
 					log.Default().Println("Processing conciliation data csv...")
-					c.FlushNewCsv()
+					c.FlushConciliation()
 				}
 				if strings.Contains(event.Name, "input-data.csv") {
 					log.Default().Println("Watching file ->", event.Name)
 					log.Default().Println("Executing processor function...")
 					log.Default().Println("Processing input data csv...")
-					i.FlushNewCsv()
+					i.FlushInput()
 				}
 			}
 		case err, ok := <-watcher.Errors:

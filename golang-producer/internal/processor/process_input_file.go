@@ -6,51 +6,22 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"sync"
+	"time"
 
-	"github.com/tiagaoalb/charizard/golang-producer/internal/queue"
+	"github.com/tiagaoalb/charizard/golang-producer/internal/model"
 )
 
 var wg sync.WaitGroup
 
 type InputDataProcessor struct {
-	InputPath  string
-	OutputPath string
+	InputPath string
 }
 
-func (p *InputDataProcessor) CsvToJson() {
-	var toJson []byte
-	file, err := os.Open(p.OutputPath)
-
-	if err != nil {
-		log.Default().Fatalln("Cannot open the csv output file to encoding to json", err.Error())
-	}
-
-	reader := csv.NewReader(file)
-	reader.Comma = ';'
-
-	lines, err := reader.ReadAll()
-
-	if err != nil {
-		log.Default().Fatalln("Cannot read the csv line, file should be revised", err.Error())
-	}
-
-	for _, each := range lines {
-		go func(each []string) {
-			toJson, err = json.Marshal(each)
-			if err != nil {
-				log.Default().Fatalln("Cannot convert csv file to json, file should be revised", err)
-			}
-		}(each)
-	}
-
-	fmt.Println(string(toJson))
-	queue.PublishInput(string(toJson))
-}
-
-func (o *InputDataProcessor) FlushNewCsv() {
+func (o *InputDataProcessor) FlushInput() {
 	log.Default().Println("Read to flush csv...")
-	workers := 5
+	workers := 2
 	data, err := os.Open(o.InputPath)
 
 	if err != nil {
@@ -59,41 +30,46 @@ func (o *InputDataProcessor) FlushNewCsv() {
 
 	defer data.Close()
 
-	outputFile, err := os.Create(o.OutputPath)
-
 	if err != nil {
 		log.Default().Fatalln("Failed in create file", err.Error())
 	}
 
-	defer outputFile.Close()
-
-	headers := []string{"transaction_id", "transaction_date", "document", "name", "age", "value", "installments_number"}
 	csvReader := csv.NewReader(data)
 	csvReader.Comma = ';'
-	copyCsv, err := csvReader.ReadAll()
+	reader, err := csvReader.ReadAll()
 
 	if err != nil {
 		log.Default().Fatalln("Failed to read the original csv to copy csv", err.Error())
 	}
 
-	csvWriter := csv.NewWriter(outputFile)
-	defer csvWriter.Flush()
-
-	if err := csvWriter.Write(headers); err != nil {
-		log.Default().Fatalf("Failed to write header: %s", err.Error())
-	}
-
 	linesChan := make(chan []string, 500)
 	wg.Add(workers)
+
+	var inputArr []model.Input
 
 	go func() {
 		defer wg.Done()
 		for lines := range linesChan {
-			if err := csvWriter.Write(lines); err != nil {
-				log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
+			date, _ := time.Parse(time.RFC3339, lines[1])
+			age, _ := strconv.Atoi(lines[4])
+			value, _ := strconv.ParseFloat(lines[5], 64)
+			installmentNumber, _ := strconv.Atoi(lines[6])
+			input := model.Input{
+				TransactionId:      lines[0],
+				TransactionDate:    date,
+				Document:           lines[2],
+				Name:               lines[3],
+				Age:                age,
+				Value:              value,
+				InstallmentsNumber: installmentNumber,
 			}
-			o.CsvToJson()
+			inputArr = append(inputArr, input)
 		}
+		j, err := json.MarshalIndent(inputArr, "", " ")
+		if err != nil {
+			log.Default().Fatalf("Failed to write data in copy csv: %s", err.Error())
+		}
+		fmt.Println(string(j))
 	}()
 
 	for i := 0; i < workers; i++ {
@@ -101,7 +77,7 @@ func (o *InputDataProcessor) FlushNewCsv() {
 			defer func() {
 				wg.Done()
 			}()
-			for _, lines := range copyCsv {
+			for _, lines := range reader {
 				linesChan <- lines
 			}
 		}()
