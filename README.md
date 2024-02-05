@@ -22,8 +22,17 @@ Tecnologias utilizadas:
 
 
 ## Run
+`git clone https://github.com/tiagaoalb/charizard.git`
+
+`cd charizard`
 
 `docker compose up -d`
+
+Pronto ! Aguardando arquivos nas pastas input & conciliation.
+
+
+
+
 
  Rabbitmq panel
 
