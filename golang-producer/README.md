@@ -10,7 +10,7 @@ docker run -d --network=<your_network> leothenardo/asapcard-golang-producer
 
 Note: docker compose is available in the root of the project
 
-## Java consumer Envs:
+## Golang consumer Envs:
 
 ```${ENV_VARIABLE:defaultValueIfNotSet}```
 
